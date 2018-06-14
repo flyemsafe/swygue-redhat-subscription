@@ -1,0 +1,19 @@
+- name: return the current content view for the system
+  shell: subscription-manager identity| awk -F':' '/environment name/ {print $2}'|tr -d " \t\n\r"
+  register: rhsm_content_view_check
+  changed_when: False
+
+- name: declare fact cv_status
+  set_fact:
+    cv_status: "{{ true if rhsm_content_view|string == rhsm_content_view_check.stdout|string else false }}"
+
+- name: declare fact reregister_system if system not consuming the correct content view
+  set_fact:
+    reregister_system: true
+  when: cv_status == false
+
+- name: show rhsm_content_view_check.stdout
+  debug: msg="{{ rhsm_content_view_check.stdout }}"
+
+- name: show reregister_system
+  debug: msg="{{ reregister_system }}"

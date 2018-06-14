@@ -1,0 +1,79 @@
+---
+# TODO: Add task to update the ORG a update belong to before registering
+#       Assuming host already exists.
+
+- name: clean out existing subscription certificate
+  shell: subscription-manager clean
+  register: rhsm_clean
+  #when: rhsm_identity_force == true
+  changed_when: False
+  ignore_errors: yes
+
+#- name: show result of clean out
+#  debug:
+#    var: rhsm_clean
+
+- name: set fact consumer_id to rhsm_identity value
+  set_fact:
+    consumer_id: "{{ true if rhsm_identity is defined and rhsm_identity else false }}"
+
+- name: show rhsm_identity
+  debug:
+    var: rhsm_identity
+
+- name: show consume_id
+  debug:
+    var: consumer_id
+
+- name: show rhsm_activationkey
+  debug:
+    var: rhsm_activationkey
+
+- name: install katello consumer rpm
+  package:
+    name: "{{ rhsm_katello_consumer_url }}"
+    state: present
+  when: rhsm_satellite
+
+- name: Register to RHSM using activation key
+  redhat_subscription:
+    state: present
+    activationkey: "{{ rhsm_activationkey }}"
+    #autosubscribe: false
+    org_id: "{{ rhsm_org_id }}"
+    force_register: True
+  register: is_registered_actkey
+  when: consumer_id != true
+
+- name: Register system using rhsm_identity
+  redhat_subscription:
+    state: present
+    activationkey: "{{ rhsm_activationkey }}"
+    org_id: "{{ rhsm_org_id }}"
+#    username: "{{ rhsm_user }}"
+#    password: "{{ rhsm_pass }}"
+    consumer_id: "{{ rhsm_identity }}"
+  register: is_registered_consumer_id
+  when: consumer_id == true
+
+- name: refresh subscriptions
+  shell: subscription-manager refresh
+  register: rhsm_refresh
+  changed_when: False
+
+- name: declare system registered with consumer id
+  set_fact:
+    registration_consumer_id: true
+    registration_message: "System successfully registered with consumer id"
+  when: ("'System successfully registered to' in is_registered_consumer_id")
+
+- name: declare system registered with activationkey
+  set_fact:
+    registration_activation_key: true
+    registration_message: "System successfully registered with activation key"
+  when: ("'System successfully registered to' in is_registered_actkey")
+
+- name: declare system registered successfully
+  debug: msg="{{ registration_message }}"
+  when: (registration_consumer_id == true or registration_activation_key == true)
+#    system_registered: "{{ true if registration_consumer_id==true or registration_activation_key==true else false }}"

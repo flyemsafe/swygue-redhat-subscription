@@ -1,0 +1,56 @@
+---
+- name: disable os default repos when registered to RHSM
+  shell: "dnf config-manager --set-disabled {{ item }}"
+  with_items: "{{ repos_to_disable }}"
+  ignore_errors: yes
+  when: repos_to_disable is defined and repos_to_disable != ''
+
+- name: create empty list to store enable repo ids
+  set_fact:
+    enabled_repo_ids: []
+
+- name: save enabled redhat repositories
+  redhat_repositories:
+    list: enabled
+  register: enabled_repositories
+
+- name: save the repo ids for the enaled repositories
+  set_fact:
+    enabled_repo_ids: "{{ enabled_repo_ids }} + [ '{{ item.value.id }}' ]"
+  with_dict: "{{ enabled_repositories.redhat_repositories }}"
+  no_log: True
+
+- name: create list of enabled repos that should not be enabled
+  set_fact:
+    repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
+
+- name: create list of repos that should be enabled
+  set_fact:
+    repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if (enabled_repo_ids) else false }}"
+
+- name: these repos will be disabled
+  debug:
+    var: repos_to_disable
+  when: repos_to_disable|length > 0
+
+- name: disable repos
+  redhat_repositories:
+    id: "{{ item }}"
+    state: disabled
+    mode: incremental
+  with_items: "{{ repos_to_disable }}"
+  when: repos_to_disable|length > 0
+
+- name: these repos will be enabled
+  debug:
+    var: repos_to_enable
+  when: repos_to_enable|length > 0
+
+- name: Enable repositories
+  redhat_repositories:
+    id: "{{ item }}"
+    state: enabled
+    mode: incremental
+  with_items: "{{ repos_to_enable }}"
+  when: repos_to_enable|length > 0
+  ignore_errors: yes

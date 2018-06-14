@@ -1,0 +1,16 @@
+---
+- name: removing system rhsm registration
+  redhat_subscription:
+    state: absent
+  register: unregister_status
+
+- name: declare the system registration status after UNREGISTER
+  set_fact:
+    system_registered: false
+  when: "'System successfully unregistered' in unregister_status.msg"
+
+#- name: show unregister_status details
+#  debug:
+#    var: system_unregistered
+#    verbosity: 1
+

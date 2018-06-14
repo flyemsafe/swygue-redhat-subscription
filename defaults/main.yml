@@ -1,0 +1,33 @@
+---
+# defaults file for swygue-redhat-subscription
+
+# Unregister a registered system
+rhsm_unregister: false
+
+# Required to register a system
+rhsm_org_id: ''
+rhsm_activationkey: ''
+redhat_repos:
+   - rhel-7-server-rpms
+   - rhel-7-server-optional-rpms
+
+# Register system to Satellite
+rhsm_satellite: False
+rhsm_satellite_fqdn: satellite.acme.com
+rhsm_katello_consumer_url: "http://{{ rhsm_satellite_fqdn }}/pub/katello-ca-consumer-latest.noarch.rpm"
+
+# if you need to ensure the system is attached to specefic pool
+rhsm_pool: ''
+
+# Re-attach/attach a system to a existing RHSM record
+rhsm_identity:
+
+# Set this to true if the system is already registered
+rhsm_identity_force: false
+
+# This only needed when rhsm_identity is declared
+rhsm_user: ''
+rhsm_pass: ''
+
+# List of repos to disable
+repos_to_disable: ''
