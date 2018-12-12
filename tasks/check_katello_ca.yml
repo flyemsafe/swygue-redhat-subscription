@@ -1,0 +1,31 @@
+- name: check if system katello-ca-consumer CN is correct
+  command: grep -xq 'CN={{ rhsm_hostname }}' /usr/bin/katello-rhsm-consumer
+  register: katello_ca_consumer_cn
+  ignore_errors: yes
+  check_mode: no
+  changed_when: no
+
+- name: remove existing katello-ca-consumer
+  yum:
+    name: katello-ca-consumer*
+    state: absent
+  when: katello_ca_consumer_cn.rc == 1
+
+- name: check if katello-ca-consumer is installed
+  command: rpm -qa katello-ca-consumer*
+  register: katello_ca_pkg
+
+- name: report which CN is configured
+  debug:
+    msg: "SYSTEM KATELLO CA IS NOT CORRECT"
+  when: katello_ca_consumer_cn.rc == 1
+
+- name: report state of katello-ca-consumer package
+  debug:
+    msg: "KATELLO_CA_CONSUMER RPM IS NOT INSTALLED"
+  when: katello_ca_pkg.stdout != ""
+
+- name: report which RHSM host is configured
+  debug:
+    msg: "SYSTEM RHSM HOST NAME IS CORRECT"
+  when: rhsm_hostname_check.rc == 0

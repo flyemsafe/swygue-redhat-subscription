@@ -9,7 +9,14 @@
     org_id: "{{ true if rhsm_org_id|string == rhsm_org_id_check.stdout|string else false }}"
 #  when: system_registered == true and rhsm_enforce_org | bool
 
+- name: check if system is register to the correct RHSM host
+  command: grep -xq 'hostname = {{ rhsm_hostname }}' /etc/rhsm/rhsm.conf
+  register: rhsm_hostname_check
+  ignore_errors: yes
+  check_mode: no
+  changed_when: no
+
 - name: setting system re-register status to true or false
   set_fact:
     reregister_system: true
-  when: org_id == false
+  when: (org_id == false) and (rhsm_hostname_check.rc == 0)
