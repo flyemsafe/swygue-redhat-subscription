@@ -24,8 +24,3 @@
   debug:
     msg: "KATELLO_CA_CONSUMER RPM IS NOT INSTALLED"
   when: katello_ca_pkg.stdout != ""
-
-- name: report which RHSM host is configured
-  debug:
-    msg: "SYSTEM RHSM HOST NAME IS CORRECT"
-  when: rhsm_hostname_check.rc == 0
