@@ -1,30 +1,37 @@
 swygue-redhat-subscription
 ==========================
 
-The role primary purpose is to register a system to the Red Hat Customer Portal using an activation key. It will attempt to re-register the system if one of the following conditions exist:
+This role will accomplish the following base on the variables pass:
 
- 1. The system is already registered but ```subscription-manager status``` output does not match **Overall Status: Current**.
- 2. The ORG ID returned by  ```subscription-manager identity``` does not match the value defined in **rhsm_org_id**.
-
-It can also re-register a system using the **system identity** that's returned by ```subscription-manager identity``` or taken from the Customer Portal. This assumes the system UUID still exist on RHSM. Useful for rebuilding a server via kickstart and you want to preserve it's RHSM history.
-
-If you pass in the rhsm_pool id it will also ensure the system is attached to this pool. Currently this does not support multiple pool ids.
-
-Finaly, it will ensure the system is only subscribe to the repos in the redhat_repos list. All other repos will be disabled.
+ - register to the Red Hat Customer Portal or your Satellite server
+ - unregister the system from either of the above
+ - ensure repos you want enable, stay enable
+ - ensure system is attach to the subscription pools you specify
+ - when registered to Satellite, ensure system is attach to the content view you specify
+ - when rebuilding a system, reattach to the system idenity you specify
+ - when registered to Satellite, ensure katello and related client tools are installed and running
+ - ensure the Red Hat Insights package is installed, running and registered
+ - ensure the system is in the org you specify
 
 Requirements
 ------------
 
-This role depends on [jfenal/ansible-modules-jfenal redhat_repositories.py](https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py). This needs to be placed in your ansible.cfg library path.
+This role depends on [jfenal/ansible-modules-jfenal redhat_repositories.py](https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py). This needs to be placed in your ansible.cfg library path or create a library folder local to the role and drop this module their..
 
-**Example**
+**Example: ansible.cfg path**
 ```
 grep library ~/.ansible.cfg
 library        = /home/me/.ansible/modules/
 cd /home/me/.ansible/modules/
 wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
 ```
-TODO: Switch to https://github.com/giovannisciortino/ansible/blob/5632c6c113bdedeae2bf21a4441d0847914f632a/lib/ansible/modules/packaging/os/rhsm_repository.py
+**Example: local to the role**
+```
+git clone git@github.com:flyemsafe/swygue-redhat-subscription.git
+cd swygue-redhat-subscription/
+wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
+```
+
 
 Role Variables
 --------------
@@ -46,9 +53,6 @@ Role Variables
 |rhsm_repos_to_disable|:x:|| |
 |rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
 |rhsm_insights_client_pkgs|:x:|```see defaults/main.yml```|Required when setting insights|
-|rhsm_location|bootstrap.yml|| |
-|rhsm_hostgroup|bootstrap.yml|| |
-|rhsm_bootstrap_skips|bootstrap.yml|| |
 
 
 Dependencies
@@ -59,24 +63,38 @@ RHEL with subscription-manager
 Example Playbook
 ----------------
 
-**Unregister**
+**Unregister a system**
 ```
-    - hosts: servers
-      roles:
-         - { role: swygue-redhat-subscription, rhsm_unregister: true }
+- name: PLAY| register system
+  hosts: vm01
+  remote_user: root
+  become: false
+  gather_facts: true
+  vars:
+    rhsm_unregister: true
+
+  tasks:
+    - name: run subscription role
+      include_role:
+        name: swygue-redhat-subscription
 ```
 
-**Register**
+**Register to RHSM with username and password**
 ```
-    - hosts: servers
-      vars:
-        - rhsm_org_id: ''
-        - rhsm_activationkey: ''
-        - redhat_repos:
-            - rhel-7-server-rpms
-            - rhel-7-server-optional-rpms
-      roles:
-         - { role: swygue-redhat-subscription }
+- name: PLAY| register system
+  hosts: vm01
+  remote_user: root
+  become: false
+  gather_facts: true
+  vars:
+    rhsm_user: user
+    rhsm_pass: password
+
+  tasks:
+    - name: run subscription role
+      include_role:
+        name: swygue-redhat-subscription
+
 ```
 
 License
