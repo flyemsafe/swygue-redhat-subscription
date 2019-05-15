@@ -20,7 +20,7 @@
 
 - name: declare fact remove_system_registration if rhsm_unregister is set
   set_fact:
-    remove_system_registration: "{{ true if rhsm_unregister == true else false }}"
+    remove_system_registration: "{{ true if rhsm_unregister else false }}"
   tags: [always]
 
 - name: set fact use_system_identity when rhsm_identity is defined
@@ -35,7 +35,7 @@
 
 - name: check system if system is in the right ORG
   include_tasks: check_org.yml
-  when: (system_registered == true and rhsm_org_id is defined) and (rhsm_org_id | length > 0)
+  when: (system_registered == true and rhsm_org_id is defined) and (rhsm_org_id != "")
   tags: [register]
 
 - name: check system if system consuming the right content view
@@ -52,14 +52,14 @@
   include_tasks: unregister.yml
   when: ( (remove_system_registration == true) and
           (system_registered == true) or
-          ( fix_registration == true ))
+          ( rhsm_fix_registration == true ))
   tags: [unregister]
 
 - name: REGISTER|register system to RHSM or Satellite
   include_tasks: register.yml
   when: ( (system_registered != true) and
           (remove_system_registration != true) or
-          (fix_registration == true))
+          (rhsm_fix_registration == true))
   tags: [register,consumer_ca]
 
 - name: REPOS| enable system repositories

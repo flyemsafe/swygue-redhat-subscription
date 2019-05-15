@@ -43,7 +43,8 @@ rhsm_setup_insights_client: true
 rhsm_insights_client_pkgs:
   - insights-client
 
-
+# force system re-registration
+rhsm_fix_registration: false
 
 # Set this to true if the system is already registered
 rhsm_identity_force: false

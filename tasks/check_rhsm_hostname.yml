@@ -10,6 +10,6 @@
   set_fact:
     rhsm_host_match: "{{ true if rhsm_hostname|string == rhsm_hostname_check.stdout|string else false }}"
 
-- name: setting fix_registration status
+- name: setting rhsm_fix_registration status
   set_fact:
-    fix_registration: "{{ true if rhsm_host_match == false else false }}"
+    rhsm_fix_registration: "{{ true if rhsm_host_match == false else false }}"

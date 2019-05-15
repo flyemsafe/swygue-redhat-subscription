@@ -26,10 +26,10 @@
     activationkey: "{{ rhsm_activationkey }}"
     server_hostname: "{{ rhsm_hostname|default(null) }}"
     org_id: "{{ rhsm_org_id }}"
-    force_register: True
+    force_register: yes
   register: is_registered_actkey
   when: use_activation_key and not use_system_identity
-  failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
+  #failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
 
 # This has not been tested againist Satellite
 - name: Register system using rhsm_identity

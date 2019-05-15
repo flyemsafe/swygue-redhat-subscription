@@ -40,7 +40,7 @@ Role Variables
 | --------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 |rhsm_unregister     |:heavy_check_mark: |false |Force a system to unregister if it's already registered. Also will cause a system not to be registered.|
 |rhsm_is_satellite   |:heavy_check_mark: |```false```|Set to true to register system to satellite server|
-|rhsm_hostname |:heavy_check_mark: |```subscription.rhsm.redhat.com```|This should be your Satellite server if you using that instead of RHSM. check_rhsm_hostname.yml will force the system to re-register if this does not match what's in /etc/rhsm/rhsm.conf|
+|rhsm_hostname |:heavy_check_mark: |```subscription.rhsm.redhat.com```|This should be your Satellite server if you are using that instead of RHSM. check_rhsm_hostname.yml will force the system to re-register if this does not match what's in /etc/rhsm/rhsm.conf|
 |rhsm_user|:x:|null|User name for Satellite or RHSM. This is use to register systems when not using activation keys or when using existing idenitiy|
 |rhsm_password|:x:|null|Password for rhsm_user|
 |rhsm_activationkey|:heavy_check_mark: |null|this will cause the system to register using an activation key|
@@ -54,6 +54,7 @@ Role Variables
 |rhsm_repos_to_disable|:x:|| |
 |rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
 |rhsm_insights_client_pkgs|:x:|```see defaults/main.yml```|Required when setting insights|
+|rhsm_fix_registration|:x:|:heavy_check_mark:|Set this to force a re-registration of the system|
 
 
 Dependencies
