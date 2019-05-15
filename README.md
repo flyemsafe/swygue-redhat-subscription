@@ -29,6 +29,7 @@ wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/pack
 ```
 git clone git@github.com:flyemsafe/swygue-redhat-subscription.git
 cd swygue-redhat-subscription/
+mkdir library
 wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
 ```
 
