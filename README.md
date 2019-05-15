@@ -45,8 +45,7 @@ Role Variables
 |rhsm_repos|:heavy_check_mark: |```see defaults/main.yml``` |List all the repo id's the system should be subscribe to. This will remove all existing repos not in this list.|
 |rhsm_repos_to_disable|:x:|| |
 |rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
-|rhsm_insights_client_pkgs|:x:|"```rhsm_insights_client_pkgs
- - insights-client```"|Required when setting insights|
+|rhsm_insights_client_pkgs|:x:|```see defaults/main.yml```|Required when setting insights|
 |rhsm_location|bootstrap.yml|| |
 |rhsm_hostgroup|bootstrap.yml|| |
 |rhsm_bootstrap_skips|bootstrap.yml|| |
