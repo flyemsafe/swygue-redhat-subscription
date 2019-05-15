@@ -28,8 +28,8 @@ wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/pack
 **Example: local to the role**
 ```
 git clone git@github.com:flyemsafe/swygue-redhat-subscription.git
-cd swygue-redhat-subscription/
-mkdir library
+mkdir swygue-redhat-subscription/library
+cd swygue-redhat-subscription/library
 wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
 ```
 
