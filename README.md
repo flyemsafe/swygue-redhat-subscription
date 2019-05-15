@@ -67,7 +67,7 @@ Example Playbook
 
 **Unregister a system**
 ```
-- name: PLAY| register system
+- name: PLAY| unregister system
   hosts: vm01
   remote_user: root
   become: false
@@ -96,7 +96,19 @@ Example Playbook
     - name: run subscription role
       include_role:
         name: swygue-redhat-subscription
+```
 
+**Register a system using an activation key**
+
+```
+- name: PLAY| register system using activaiton key
+  hosts: vm01
+  remote_user: root
+  become: false
+  gather_facts: true
+  vars:
+    rhsm_activationkey: rhel-server
+    rhsm_org_id: ACME
 ```
 
 License
