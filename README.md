@@ -40,15 +40,9 @@ Role Variables
 |rhsm_identity|:heavy_check_mark: |null|register system using the system identity returned by ```subscription-manager identity``` |
 |rhsm_content_view|:x:|null|set the content view to force system to re-register system when content view does not match|
 |rhsm_katello_ca_consumer_rpm|:heavy_check_mark: |```katello-ca-consumer-latest.noarch.rpm```|Satellite katello RPM|
-|rhsm_satellite_client_pkgs|:x:|"```rhsm_satellite_client_pkgs:
-  - katello-agent
-  - katello-host-tools-tracer```"|Only the katello-agent is required for best experince with Satellite. Required when setting up Satellite server.|
+|rhsm_satellite_client_pkgs|:x:|```see defaults/main.yml``` |Only the katello-agent is required for best experince with Satellite. Required when setting up Satellite server.|
 |rhsm_pool_ids|:x:|null|"Refer to the ansible docs for redhat_subscription. When set| this will ensure a registered system is attach to the pools specifiied."|
-|rhsm_repos|:heavy_check_mark: |"```rhsm_repos:
-  - rhel-7-server-rpms
-  - rhel-7-server-optional-rpms
-  - rhel-7-server-supplementary-rpms
-  - rhel-7-server-extras-rpms```"|List all the repo id's the system should be subscribe to. This will remove all existing repos not in this list.|
+|rhsm_repos|:heavy_check_mark: |```see defaults/main.yml``` |List all the repo id's the system should be subscribe to. This will remove all existing repos not in this list.|
 |rhsm_repos_to_disable|:x:|| |
 |rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
 |rhsm_insights_client_pkgs|:x:|"```rhsm_insights_client_pkgs
@@ -56,6 +50,7 @@ Role Variables
 |rhsm_location|bootstrap.yml|| |
 |rhsm_hostgroup|bootstrap.yml|| |
 |rhsm_bootstrap_skips|bootstrap.yml|| |
+
 
 Dependencies
 ------------
