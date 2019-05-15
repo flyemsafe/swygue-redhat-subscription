@@ -1,39 +1,45 @@
 ---
-- name: "verify current attached pool_id matches the one specified: {{ rhsm_pool }}"
-  shell:
-    subscription-manager list --consumed --pool-only | grep -o "{{ rhsm_pool }}"
-  register: pool_is_attached
-  changed_when: false
-  ignore_errors: True
-  when: (poolid and system_registered == true)
-
-- name: get current pool id
-  shell:
-    subscription-manager list --consumed --pool-only
-  register: current_pool_id
-  changed_when: false
-  ignore_errors: True
-
-- name: "Removing pool {{ pool_is_attached.stdout }}"
-  command:
-    subscription-manager remove --pool="{{ current_pool_id.stdout }}"
-  register: removed_pool
-  #until: removed_pool.rc == 0
-  #retries: 5
-  #delay: 10
-  when: current_pool_id.stdout != ""
-
-- name: "Attach to pool {{ rhsm_pool }}"
-  command:
-    subscription-manager attach --pool="{{ rhsm_pool }}"
-  register: attached_pool
-#  until: "{{ attached_pool.rc }} == 0"
-#  retries: 5
-#  delay: 10
-
-- name: show remove results
-  debug:
-    var: attached_pool
-    verbosity: 2
+- name: attach to the subscription pools provided
+  redhat_subscription:
+    state: present
+    username: "{{ rhsm_user }}"
+    password: "{{ rhsm_password }}"
+    pool_ids: "{{ rhsm_pool_ids }}"
+#- name: "verify current attached pool_id matches the one specified: {{ rhsm_pool }}"
+#  shell:
+#    subscription-manager list --consumed --pool-only | grep -o "{{ rhsm_pool }}"
+#  register: pool_is_attached
+#  changed_when: false
+#  ignore_errors: True
+#  when: (poolid and system_registered == true)
+#
+#- name: get current pool id
+#  shell:
+#    subscription-manager list --consumed --pool-only
+#  register: current_pool_id
+#  changed_when: false
+#  ignore_errors: True
+#
+#- name: "Removing pool {{ pool_is_attached.stdout }}"
+#  command:
+#    subscription-manager remove --pool="{{ current_pool_id.stdout }}"
+#  register: removed_pool
+#  #until: removed_pool.rc == 0
+#  #retries: 5
+#  #delay: 10
+#  when: current_pool_id.stdout != ""
+#
+#- name: "Attach to pool {{ rhsm_pool }}"
+#  command:
+#    subscription-manager attach --pool="{{ rhsm_pool }}"
+#  register: attached_pool
+##  until: "{{ attached_pool.rc }} == 0"
+##  retries: 5
+##  delay: 10
+#
+#- name: show remove results
+#  debug:
+#    var: attached_pool
+#    verbosity: 2
 
 

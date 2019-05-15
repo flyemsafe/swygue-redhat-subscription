@@ -1,0 +1,21 @@
+- name: Download bootstrap.py
+  get_url:
+    url: "http://{{ rhsm_hostname }}/pub/bootstrap.py"
+    dest: /usr/local/bin/bootstrap.py
+    mode: 0755
+
+- name: include check_katello_ca.yml
+  include_tasks: check_katello_ca.yml
+
+- name: running bootstrap.py
+  shell: |
+    /usr/local/bin/bootstrap.py \
+    --login={{ rhsm_user }} \
+    --password={{ rhsm_password }} \
+    --server {{ rhsm_hostname }} \
+    -o {{ rhsm_org_id }} \
+    -L {{ rhsm_location }} \
+    --hostgroup={{ rhsm_hostgroup }} \
+    --activationkey={{ rhsm_activationkey }} \
+    --rex --rex-user root \
+    --skip {{ rhsm_bootstrap_skips }}

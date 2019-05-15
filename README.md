@@ -28,37 +28,35 @@ TODO: Switch to https://github.com/giovannisciortino/ansible/blob/5632c6c113bded
 
 Role Variables
 --------------
+|Variable|Required|Default|Description|
+|rhsm_unregister|:heavy_check_mark: |false|Force a system to unregister if it's already registered. Also will cause a system not to be registered.|
+|rhsm_is_satellite|:heavy_check_mark: |```false```|Set to true to register system to satellite server|
+|rhsm_hostname|:heavy_check_mark: |```subscription.rhsm.redhat.com```|This should be your Satellite server if you using that instead of RHSM. check_rhsm_hostname.yml will force the system to re-register if this does not match what's in /etc/rhsm/rhsm.conf|
+|rhsm_user|:x:|null|User name for Satellite or RHSM. This is use to register systems when not using activation keys or when using existing idenitiy|
+|rhsm_password|:x:|null|Password for rhsm_user|
+|rhsm_activationkey|:heavy_check_mark: |null|this will cause the system to register using an activation key|
+|rhsm_org_id|:x:|null|This is required when using activation keys to register a system.|
+|rhsm_identity|:heavy_check_mark: |null|register system using the system identity returned by ```subscription-manager identity``` |
+|rhsm_content_view|:x:|null|set the content view to force system to re-register system when content view does not match|
+|rhsm_katello_ca_consumer_rpm|:heavy_check_mark: |```katello-ca-consumer-latest.noarch.rpm```|Satellite katello RPM|
+|rhsm_satellite_client_pkgs|:x:|"```rhsm_satellite_client_pkgs:
+  - katello-agent
+  - katello-host-tools-tracer```"|Only the katello-agent is required for best experince with Satellite. Required when setting up Satellite server.|
+|rhsm_pool_ids|:x:|null|"Refer to the ansible docs for redhat_subscription. When set| this will ensure a registered system is attach to the pools specifiied."|
+|rhsm_repos|:heavy_check_mark: |"```rhsm_repos:
+  - rhel-7-server-rpms
+  - rhel-7-server-optional-rpms
+  - rhel-7-server-supplementary-rpms
+  - rhel-7-server-extras-rpms```"|List all the repo id's the system should be subscribe to. This will remove all existing repos not in this list.|
+|rhsm_repos_to_disable|:x:|| |
+|rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
+|rhsm_insights_client_pkgs|:x:|"```rhsm_insights_client_pkgs
+ - insights-client```"|Required when setting insights|
+|rhsm_location|bootstrap.yml|| |
+|rhsm_hostgroup|bootstrap.yml|| |
+|rhsm_bootstrap_skips|bootstrap.yml|| |
 
-**Register or Unregister a system**
-```
-# Unregister a registered system
-rhsm_unregister: false
 
-# Required to register a system
-rhsm_org_id: ''
-rhsm_activationkey: ''
-redhat_repos:
-   - rhel-7-server-rpms
-   - rhel-7-server-optional-rpms
-```
-
-**Optional based on desired state**
-```
-# if you need to ensure the system is attached to specefic pool
-rhsm_pool: ''
-
-# Re-attach/attach a system to a existing RHSM record
-rhsm_identity:
-
-# Set this to true if the system is already registered
-rhsm_identity_force: false
-
-# Register to your satellite vs RHSM
-rhsm_satellite: False
-rhsm_satellite_fqdn: satellite.acme.com
-rhsm_katello_consumer_url: "http://{{ rhsm_satellite_fqdn }}/pub/katello-ca-consumer-latest.noarch.rpm"
-
-```
 Dependencies
 ------------
 

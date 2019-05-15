@@ -1,26 +1,48 @@
+- name: check if katello-ca-consumer is installed
+  command: rpm -qa katello-ca-consumer*
+  register: katello_ca_pkg
+  tags:
+    - register
+    - katello_ca
+
+- name: declare fact system_registered true if status is registered
+  set_fact:
+    katello_ca_installed: "{{ true if  katello_ca_pkg.stdout != '' else false }}"
+  tags:
+    - always
+
 - name: check if system katello-ca-consumer CN is correct
   command: grep -xq 'CN={{ rhsm_hostname }}' /usr/bin/katello-rhsm-consumer
   register: katello_ca_consumer_cn
   ignore_errors: yes
   check_mode: no
   changed_when: no
+  when: katello_ca_installed
+  tags:
+    - register
+    - katello_ca
 
 - name: remove existing katello-ca-consumer
   yum:
     name: katello-ca-consumer*
     state: absent
-  when: katello_ca_consumer_cn.rc == 1
-
-- name: check if katello-ca-consumer is installed
-  command: rpm -qa katello-ca-consumer*
-  register: katello_ca_pkg
+  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1)
+  tags:
+    - register
+    - katello_ca
 
 - name: report which CN is configured
   debug:
     msg: "SYSTEM KATELLO CA IS NOT CORRECT"
-  when: katello_ca_consumer_cn.rc == 1
+  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1)
+  tags:
+    - register
+    - katello_ca
 
 - name: report state of katello-ca-consumer package
   debug:
     msg: "KATELLO_CA_CONSUMER RPM IS NOT INSTALLED"
-  when: katello_ca_pkg.stdout != ""
+  when: katello_ca_installedl|default(false)|bool == false
+  tags:
+    - register
+    - katello_ca

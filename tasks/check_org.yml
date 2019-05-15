@@ -1,13 +1,11 @@
 - name: return the ORG the system is registered to
   shell: subscription-manager identity| awk -F':' '/org ID/ {print $2}'|tr -d " \t\n\r"
   register: rhsm_org_id_check
-#  when: system_registered == true and rhsm_org_id != ""
   changed_when: False
 
 - name: set fact org_id to true if it matches the system current org_id otherwise false
   set_fact:
     org_id: "{{ true if rhsm_org_id|string == rhsm_org_id_check.stdout|string else false }}"
-#  when: system_registered == true and rhsm_enforce_org | bool
 
 - name: check if system is register to the correct RHSM host
   command: grep -xq 'hostname = {{ rhsm_hostname }}' /etc/rhsm/rhsm.conf

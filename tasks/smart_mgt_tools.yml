@@ -1,0 +1,32 @@
+---
+
+- name: install satellite client tools
+  package:
+    name: "{{ rhsm_satellite_client_pkgs }}"
+    state: present
+  when: rhsm_is_satellite
+
+- name: setup katello-agent
+  service:
+    name: goferd
+    state: started
+    enabled: yes
+  when: rhsm_is_satellite
+
+- name: install red hat insights
+  package:
+    name: "{{ rhsm_insights_client_pkgs }}"
+    state: present
+  when: rhsm_setup_insights_client
+
+- name: check insights registration status
+  command: /usr/bin/insights-client --status
+  register: is_insights_registered
+  ignore_errors: yes
+  changed_when: is_insights_registered.rc == 20
+  when: rhsm_setup_insights_client
+
+- name: register insights
+  command: /usr/bin/insights-client --force-reregister
+  when: rhsm_setup_insights_client and is_insights_registered.rc == 1
+

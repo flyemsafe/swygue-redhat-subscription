@@ -7,77 +7,70 @@
   register: rhsm_clean
   changed_when: False
   ignore_errors: yes
+  tags: [register]
 
 - name: include check_katello_ca.yml
   include_tasks: check_katello_ca.yml
+  tags: [register, katello_ca]
+  when: rhsm_is_satellite
 
-- name: install katello consumer rpm
+- name: install the katello consumer rpm
   package:
-    name: "http://{{ rhsm_hostname }}/pub/katello-ca-consumer-{{ rhsm_hostname }}-1.0-1.noarch.rpm"
-    #name: "{{ rhsm_katello_consumer_url }}"
+    name: "http://{{ rhsm_hostname }}/pub/{{ rhsm_katello_ca_consumer_rpm }}"
     state: present
-  when: katello_ca_pkg.stdout == ""
-
-#- name: show result of clean out
-#  debug:
-#    var: rhsm_clean
-
-- name: set fact consumer_id to rhsm_identity value
-  set_fact:
-    consumer_id: "{{ true if rhsm_identity is defined and rhsm_identity else false }}"
-
-- name: show rhsm_identity
-  debug:
-    var: rhsm_identity
-
-- name: show consume_id
-  debug:
-    var: consumer_id
-
-- name: show RHSM activaiton-key and ORG
-  debug:
-    msg: "KEY={{ rhsm_activationkey }} ORG={{ rhsm_org_id }}"
+  when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite
 
 - name: Register to RHSM using activation key
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
-    #autosubscribe: f alse
-    server_hostname: "{{ rhsm_hostname }}"
+    server_hostname: "{{ rhsm_hostname|default(null) }}"
     org_id: "{{ rhsm_org_id }}"
     force_register: True
   register: is_registered_actkey
-  when: consumer_id != true
+  when: use_activation_key and not use_system_identity
+  failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
 
+# This has not been tested againist Satellite
 - name: Register system using rhsm_identity
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
+    server_hostname: "{{ rhsm_hostname|default(null) }}"
     org_id: "{{ rhsm_org_id }}"
-#    username: "{{ rhsm_user }}"
-#    password: "{{ rhsm_pass }}"
-    consumer_id: "{{ rhsm_identity }}"
-  register: is_registered_consumer_id
-  when: consumer_id == true
+    use_system_identity: "{{ rhsm_identity }}"
+  register: is_registered_use_system_identity
+  when: use_system_identity and not use_activation_key
+  failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
+
+- name: Register system using rhsm_user and rhsm_password
+  redhat_subscription:
+    state: present
+    username: "{{ rhsm_user }}"
+    password: "{{ rhsm_pass }}"
+    server_hostname: "{{ rhsm_hostname }}"
+    auto_attach: true
+    force_register: yes
+    org_id: "{{ rhsm_org_id|default(null) }}"
+  register: is_registered_rhsm_user
+  when: not use_system_identity and not use_activation_key
+  #failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
 
 - name: refresh subscriptions
   shell: subscription-manager refresh
   register: rhsm_refresh
   changed_when: False
+  when: is_registered_rhsm_user is changed
 
+# These should be removed as they are not current used
 - name: declare system registered with consumer id
   set_fact:
-    registration_consumer_id: true
+    registration_use_system_identity: true
     registration_message: "System successfully registered with consumer id"
-  when: ("'System successfully registered to' in is_registered_consumer_id")
+  when: ("'System successfully registered to' in is_registered_use_system_identity")
 
 - name: declare system registered with activationkey
   set_fact:
     registration_activation_key: true
     registration_message: "System successfully registered with activation key"
   when: ("'System successfully registered to' in is_registered_actkey")
-
-- name: declare system registered successfully
-  debug: msg="{{ registration_message }}"
-  when: (registration_consumer_id == true or registration_activation_key == true)
-#    system_registered: "{{ true if registration_consumer_id==true or registration_activation_key==true else false }}"

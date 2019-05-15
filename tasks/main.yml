@@ -4,52 +4,65 @@
   package:
     name: subscription-manager
     state: present
+  tags: [always]
 
 - name: check if system is already registered
   command: subscription-manager refresh
   register: is_system_registered
   failed_when: False
   changed_when: False
+  tags: [always]
 
 - name: declare fact system_registered true if status is registered
   set_fact:
     system_registered: "{{ true if is_system_registered.rc==0 else false }}"
+  tags: [always]
 
 - name: declare fact remove_system_registration if rhsm_unregister is set
   set_fact:
     remove_system_registration: "{{ true if rhsm_unregister == true else false }}"
+  tags: [always]
+
+- name: set fact use_system_identity when rhsm_identity is defined
+  set_fact:
+    use_system_identity: "{{ false if rhsm_identity == '' else true }}"
+  tags: [register]
+
+- name: set fact use_activation_key when rhsm_activationkey is defined
+  set_fact:
+    use_activation_key: "{{ false if rhsm_activationkey == '' else true }}"
+  tags: [register]
 
 - name: check system if system is in the right ORG
   include_tasks: check_org.yml
-  when: system_registered == true and rhsm_org_id != ""
+  when: (system_registered == true and rhsm_org_id is defined) and (rhsm_org_id | length > 0)
+  tags: [register]
 
 - name: check system if system consuming the right content view
   include_tasks: check_cv.yml
-  when: system_registered == true and rhsm_content_view != ""
+  when: (system_registered == true and rhsm_content_view is defined) and (rhsm_content_view | length > 0)
+  tags: [register]
 
 - name: check system if system is registered to the correct RHSM host
   include_tasks: check_rhsm_hostname.yml
   when: system_registered == true and rhsm_hostname != ""
+  tags: [register]
 
 - name: UNREGISTER|remove system rhsm registration if subscription is not current or rhsm ORG id does not match the systems current registered ORG id
   include_tasks: unregister.yml
-  when: ( (remove_system_registration == true) and 
+  when: ( (remove_system_registration == true) and
           (system_registered == true) or
           ( fix_registration == true ))
+  tags: [unregister]
 
-- name: REGISTER|register system to RHSM
+- name: REGISTER|register system to RHSM or Satellite
   include_tasks: register.yml
-  when: ( (system_registered != true) and 
-          (remove_system_registration != true) or 
+  when: ( (system_registered != true) and
+          (remove_system_registration != true) or
           (fix_registration == true))
-
-# TODO: commented out for now as this needs to be updated
-# Since their could be multiple pool, it should check for
-# each pool and remove pool not needed or attach pool needed
-#- name: ATTACH POOL| ensure system is attached to correct pool
-#  include_tasks: pools.yml
-#  when: (system_registered == true and rhsm_pool|trim != "")
+  tags: [register,consumer_ca]
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
-  when: (system_registered == true and rhsm_repos|trim != "" )
+  when: (system_registered == true and rhsm_content_view is defined) and (rhsm_content_view | length > 0)
+  tags: [register,repos]

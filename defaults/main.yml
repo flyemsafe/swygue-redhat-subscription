@@ -4,30 +4,50 @@
 # Unregister a registered system
 rhsm_unregister: false
 
-# Required to register a system
-rhsm_org_id: ''
-rhsm_activationkey: ''
-redhat_repos:
-   - rhel-7-server-rpms
-   - rhel-7-server-optional-rpms
+# register system to a Satellite Server
+rhsm_is_satellite: false
 
-# Register system to Satellite
-rhsm_satellite: False
-rhsm_satellite_fqdn: satellite.acme.com
-rhsm_katello_consumer_url: "http://{{ rhsm_satellite_fqdn }}/pub/katello-ca-consumer-latest.noarch.rpm"
+# change this to the satellite server hostname if using Satellite
+rhsm_hostname: subscription.rhsm.redhat.com
 
-# if you need to ensure the system is attached to specefic pool
-rhsm_pool: ''
+# Required when using rhsm_identity or not using activation keys
+rhsm_user: ''
+rhsm_pass: ''
+
+# Required when registering with activation keys
+rhsm_activationkey: ""
+rhsm_org_id: ""
 
 # Re-attach/attach a system to a existing RHSM record
-rhsm_identity:
+rhsm_identity: ""
+
+# Satellite Options
+rhsm_content_view: ""
+rhsm_katello_ca_consumer_rpm: katello-ca-consumer-latest.noarch.rpm
+rhsm_satellite_client_pkgs:
+  - katello-agent
+  - katello-host-tools-tracer
+
+# if you need to ensure the system is attached to specefic pool
+rhsm_pool_ids: ''
+
+# Repos to enable
+rhsm_repos:
+  - rhel-7-server-rpms
+  - rhel-7-server-optional-rpms
+  - rhel-7-server-supplementary-rpms
+  - rhel-7-server-extras-rpms
+
+# Red Hat Insights
+rhsm_setup_insights_client: true
+rhsm_insights_client_pkgs:
+  - insights-client
+
+
 
 # Set this to true if the system is already registered
 rhsm_identity_force: false
 
-# This only needed when rhsm_identity is declared
-rhsm_user: ''
-rhsm_pass: ''
 
 # List of repos to disable
 repos_to_disable: ''

@@ -1,9 +1,9 @@
 ---
-- name: disable os default repos when registered to RHSM
-  shell: "dnf config-manager --set-disabled {{ item }}"
-  with_items: "{{ repos_to_disable }}"
-  ignore_errors: yes
-  when: repos_to_disable is defined and repos_to_disable != ''
+#- name: disable os default repos when registered to RHSM
+#  shell: "dnf config-manager --set-disabled {{ item }}"
+#  with_items: "{{ rhsm_repos_to_disable }}"
+#  ignore_errors: yes
+#  when: rhsm_repos_to_disable is defined and rhsm_repos_to_disable != ''
 
 - name: create empty list to store enable repo ids
   set_fact:
@@ -22,7 +22,7 @@
 
 - name: create list of enabled repos that should not be enabled
   set_fact:
-    repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
+    rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
 
 - name: create list of repos that should be enabled
   set_fact:
@@ -30,21 +30,29 @@
 
 - name: these repos will be disabled
   debug:
-    var: repos_to_disable
-  when: repos_to_disable|length > 0
+    var: rhsm_repos_to_disable
+  when: rhsm_repos_to_disable|length > 0
 
 - name: disable repos
   redhat_repositories:
     id: "{{ item }}"
     state: disabled
     mode: incremental
-  with_items: "{{ repos_to_disable }}"
-  when: repos_to_disable|length > 0
+  with_items: "{{ rhsm_repos_to_disable }}"
+  when: rhsm_repos_to_disable|length > 0
 
 - name: these repos will be enabled
   debug:
     var: repos_to_enable
   when: repos_to_enable|length > 0
+
+- name: include pools.yml
+  include_tasks: pools.yml
+  tags: 
+    - register
+    - katello_ca
+  when: ((rhsm_pool_ids is defined and rhsm_pool_ids != '') or (pools is defined and pools != '') and
+          (repos_to_enable|length > 0))
 
 - name: Enable repositories
   redhat_repositories:
@@ -54,3 +62,7 @@
   with_items: "{{ repos_to_enable }}"
   when: repos_to_enable|length > 0
   ignore_errors: yes
+
+- name: install satellite client tools
+  include_tasks: smart_mgt_tools.yml
+  tags: [repos,register,katello_ca]
