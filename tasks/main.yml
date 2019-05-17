@@ -64,5 +64,5 @@
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
-  when: (system_registered == true and rhsm_content_view is defined) and (rhsm_content_view | length > 0)
+  when: system_registered == true
   tags: [register,repos]

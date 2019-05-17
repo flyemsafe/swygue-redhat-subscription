@@ -1,5 +1,5 @@
 - name: return the RHSM HOSTNAME the system is registered to
-  shell: awk -F'=' '/^hostname/ {print $2}' /etc/rhsm/rhsm.conf
+  shell: awk -F'=' '/^hostname/ {print $2}' /etc/rhsm/rhsm.conf | awk '{gsub(" +","");print $0}'
   register: rhsm_hostname_check
   changed_when: False
 
