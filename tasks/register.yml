@@ -63,5 +63,5 @@
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
-  when: is_registered_rhsm_user.changed or is_registered_use_system_identity.changed or is_registered_actkey
+  when: is_registered_rhsm_user.changed or is_registered_use_system_identity.changed or is_registered_actkey.changed
   tags: [register,repos]
