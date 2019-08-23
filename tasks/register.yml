@@ -54,23 +54,14 @@
     org_id: "{{ rhsm_org_id|default(null) }}"
   register: is_registered_rhsm_user
   when: not use_system_identity and not use_activation_key
-  #failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
 
 - name: refresh subscriptions
   shell: subscription-manager refresh
   register: rhsm_refresh
   changed_when: False
-  when: is_registered_rhsm_user is changed
+  when: is_registered_rhsm_user.changed
 
-# These should be removed as they are not current used
-- name: declare system registered with consumer id
-  set_fact:
-    registration_use_system_identity: true
-    registration_message: "System successfully registered with consumer id"
-  when: ("'System successfully registered to' in is_registered_use_system_identity")
-
-- name: declare system registered with activationkey
-  set_fact:
-    registration_activation_key: true
-    registration_message: "System successfully registered with activation key"
-  when: ("'System successfully registered to' in is_registered_actkey")
+- name: REPOS| enable system repositories
+  include_tasks: repos.yml
+  when: is_registered_rhsm_user.changed or is_registered_use_system_identity.changed or is_registered_actkey
+  tags: [register,repos]
