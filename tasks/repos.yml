@@ -5,6 +5,11 @@
 #  ignore_errors: yes
 #  when: rhsm_repos_to_disable is defined and rhsm_repos_to_disable != ''
 
+- name: refresh subscriptions
+  shell: subscription-manager refresh
+  register: rhsm_refresh
+  changed_when: False
+  
 - name: create empty list to store enable repo ids
   set_fact:
     enabled_repo_ids: []
