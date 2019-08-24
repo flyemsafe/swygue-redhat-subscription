@@ -13,6 +13,15 @@
   changed_when: False
   tags: [always]
 
+- name: check system registration status
+  shell: >
+      subscription-manager status | awk '/Overall Status:/ {print $3}'
+  failed_when: False
+  changed_when: False
+  register: system_rhsm_status
+  tags: [always]
+
+
 - name: declare fact system_registered true if status is registered
   set_fact:
     system_registered: "{{ true if is_system_registered.rc==0 else false }}"
@@ -48,11 +57,15 @@
   when: system_registered == true and rhsm_hostname != ""
   tags: [register]
 
+- name: set system_registered to false if subscription-manager status is not current
+  set_fact:
+    rhsm_fix_registration: "{{ true if system_rhsm_status != 'Current' else false }}"
+
 - name: UNREGISTER|remove system rhsm registration if subscription is not current or rhsm ORG id does not match the systems current registered ORG id
   include_tasks: unregister.yml
-  when: ( (remove_system_registration == true) and
-          (system_registered == true) or
-          ( rhsm_fix_registration == true ))
+  when: ( (remove_system_registration|bool ) and
+          (system_registered|bool ) or
+          ( rhsm_fix_registration|bool ))
   tags: [unregister]
 
 - name: REGISTER|register system to RHSM or Satellite
@@ -64,5 +77,10 @@
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
-  when: system_registered == true
+  #when: system_registered == true
+  when: ( (system_registered != true) and
+          (remove_system_registration != true) or
+          (rhsm_fix_registration == true))
   tags: [register,repos]
+
+- meta: end_play
