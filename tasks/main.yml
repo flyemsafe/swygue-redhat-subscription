@@ -82,5 +82,3 @@
           (remove_system_registration != true) or
           (rhsm_fix_registration == true))
   tags: [register,repos]
-
-- meta: end_play
