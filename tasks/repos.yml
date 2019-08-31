@@ -29,6 +29,9 @@
   set_fact:
     rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
 
+- debug:
+    msg: "Repos to Enable {{ rhsm_repos }}"
+
 - name: create list of repos that should be enabled
   set_fact:
     repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if (enabled_repo_ids) else false }}"

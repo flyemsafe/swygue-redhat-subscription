@@ -78,7 +78,7 @@
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
   #when: system_registered == true
-  when: ( (system_registered != true) and
-          (remove_system_registration != true) or
-          (rhsm_fix_registration == true))
+  when: (system_registered|bool and not remove_system_registration|bool)
+         or (rhsm_fix_registration|bool) 
   tags: [register,repos]
+
