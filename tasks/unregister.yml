@@ -9,7 +9,7 @@
     system_registered: false
   when: "'System successfully unregistered' in unregister_status.msg"
 
-- name: show unregister_status details for {{ inventory_host }}
+- name: show unregister_status details for {{ inventory_hostname }}
   debug:
     var: unregister_status
 

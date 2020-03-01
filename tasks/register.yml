@@ -20,7 +20,7 @@
     state: present
   when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite
 
-- name: Register {{ inventory_host }} to RHSM using activation key
+- name: Register {{ inventory_hostname }} to RHSM using activation key
   vars:
     server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
@@ -34,7 +34,7 @@
   #failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
 
 # This has not been tested againist Satellite
-- name: Register {{ inventory_host }} system using rhsm_identity
+- name: Register {{ inventory_hostname }} system using rhsm_identity
   vars:
     server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
@@ -47,7 +47,7 @@
   when: use_system_identity and not use_activation_key
   failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
 
-- name: Register {{ inventory_host }} system using rhsm_user and rhsm_password
+- name: Register {{ inventory_hostname }} system using rhsm_user and rhsm_password
   vars:
     server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:

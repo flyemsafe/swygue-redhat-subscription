@@ -11,7 +11,7 @@
 
 - name: report the org the system is in
   debug:
-    msg: "The {{ inventory_host }} is {{ org_msg }} with ORG ID {{ rhsm_org_id }}."
+    msg: "The {{ inventory_hostname }} is {{ org_msg }} with ORG ID {{ rhsm_org_id }}."
 
 - name: check if system is registered to the correct RHSM host
   command: grep -xq 'hostname = {{ rhsm_hostname }}' /etc/rhsm/rhsm.conf
