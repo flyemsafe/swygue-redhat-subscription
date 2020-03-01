@@ -27,21 +27,14 @@
 
 - name: create list of enabled repos that should not be enabled
   set_fact:
-    rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else '' }}"
+    rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
+
+- debug:
+    msg: "Repos to Enable {{ rhsm_repos }}"
 
 - name: create list of repos that should be enabled
   set_fact:
-    repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if (enabled_repo_ids) else '' }}"
-
-- name: report repos to enable
-  debug:
-    msg: "{{ repos_to_enable }}"
-  when: repos_to_enable|length > 0
-
-- name: report repos to disable
-  debug:
-    msg: "Repos to disable {{ rhsm_repos_to_disable }}"
-  when: rhsm_repos_to_disable|length > 0
+    repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if (enabled_repo_ids) else false }}"
 
 - name: these repos will be disabled
   debug:

@@ -18,37 +18,43 @@
   package:
     name: "http://{{ rhsm_hostname }}/pub/{{ rhsm_katello_ca_consumer_rpm }}"
     state: present
-  when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite|bool
+  when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite
 
-- name: Register to RHSM using activation key
+- name: Register {{ inventory_host }} to RHSM using activation key
+  vars:
+    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
-    server_hostname: "{{ rhsm_hostname|default(null) }}"
+    server_hostname: "{{ server_url|default(null) }}"
     org_id: "{{ rhsm_org_id }}"
     force_register: yes
   register: is_registered_actkey
   when: use_activation_key and not use_system_identity
-  failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
+  #failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
 
 # This has not been tested againist Satellite
-- name: Register system using rhsm_identity
+- name: Register {{ inventory_host }} system using rhsm_identity
+  vars:
+    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
-    server_hostname: "{{ rhsm_hostname|default(null) }}"
+    server_hostname: "{{ server_url|default(null) }}"
     org_id: "{{ rhsm_org_id }}"
     use_system_identity: "{{ rhsm_identity }}"
   register: is_registered_use_system_identity
   when: use_system_identity and not use_activation_key
   failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
 
-- name: Register system using rhsm_user and rhsm_password
+- name: Register {{ inventory_host }} system using rhsm_user and rhsm_password
+  vars:
+    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     username: "{{ rhsm_user }}"
     password: "{{ rhsm_pass }}"
-    server_hostname: "{{ rhsm_hostname }}"
+    server_hostname: "{{ rhsm_hostname|default(null) }}"
     auto_attach: true
     force_register: yes
     org_id: "{{ rhsm_org_id|default(null) }}"

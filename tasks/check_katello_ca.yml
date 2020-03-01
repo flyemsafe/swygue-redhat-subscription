@@ -22,14 +22,14 @@
     - register
     - katello_ca
 
-#- name: remove existing katello-ca-consumer
-#  yum:
-#    name: katello-ca-consumer*
-#    state: absent
-#  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1)
-#  tags:
-#    - register
-#    - katello_ca
+- name: remove existing katello-ca-consumer
+  yum:
+    name: katello-ca-consumer*
+    state: absent
+  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1)
+  tags:
+    - register
+    - katello_ca
 
 - name: report which CN is configured
   debug:

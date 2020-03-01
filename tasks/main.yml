@@ -21,10 +21,15 @@
   register: system_rhsm_status
   tags: [always]
 
-
 - name: declare fact system_registered true if status is registered
   set_fact:
     system_registered: "{{ true if is_system_registered.rc==0 else false }}"
+    system_registered_msg: "{{ 'registered' if is_system_registered.rc==0 else 'not registered' }}"
+  tags: [always]
+
+- name: report system registration status
+  debug:
+    msg: "The system is {{ system_registered_msg }}."
   tags: [always]
 
 - name: declare fact remove_system_registration if rhsm_unregister is set
@@ -75,10 +80,14 @@
           (rhsm_fix_registration == true))
   tags: [register,consumer_ca]
 
+- debug:
+    msg: "Register with actkey {{ rhsm_activationkey }}? {{ use_activation_key}} or system ident {{ use_system_identity }}"
+- meta: end_play
+
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
   #when: system_registered == true
   when: (system_registered|bool and not remove_system_registration|bool)
-         or (rhsm_fix_registration|bool) 
+         or (rhsm_fix_registration|bool)
   tags: [register,repos]
 
