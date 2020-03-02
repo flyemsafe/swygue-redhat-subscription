@@ -14,6 +14,12 @@
   tags: [register, katello_ca]
   when: rhsm_is_satellite
 
+- name: declar rhsm server_url and rhsm base_url
+  set_fact:
+    server_url: "{{ rhsm_hostname }}/rhsm"
+    base_url: "https://{{ rhsm_hostname }}"
+  when: rhsm_is_satellite
+
 - name: install the katello consumer rpm
   package:
     name: "http://{{ rhsm_hostname }}/pub/{{ rhsm_katello_ca_consumer_rpm }}"
@@ -21,12 +27,11 @@
   when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite
 
 - name: Register {{ inventory_hostname }} to RHSM using activation key
-  vars:
-    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
-    server_hostname: "{{ server_url|default(null) }}"
+    server_hostname: "{{ server_url | default(omit) }}"
+    rhsm_baseurl: "{{ base_url | default(omit) }}"
     org_id: "{{ rhsm_org_id }}"
     force_register: yes
   register: is_registered_actkey
@@ -35,12 +40,11 @@
 
 # This has not been tested againist Satellite
 - name: Register {{ inventory_hostname }} system using rhsm_identity
-  vars:
-    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     activationkey: "{{ rhsm_activationkey }}"
-    server_hostname: "{{ server_url|default(null) }}"
+    server_hostname: "{{ server_url | default(omit) }}"
+    rhsm_baseurl: "{{ base_url | default(omit) }}"
     org_id: "{{ rhsm_org_id }}"
     use_system_identity: "{{ rhsm_identity }}"
   register: is_registered_use_system_identity
@@ -48,13 +52,12 @@
   failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
 
 - name: Register {{ inventory_hostname }} system using rhsm_user and rhsm_password
-  vars:
-    server_url: "{{ rhsm_hostname }}/rhsm"
   redhat_subscription:
     state: present
     username: "{{ rhsm_user }}"
     password: "{{ rhsm_pass }}"
-    server_hostname: "{{ rhsm_hostname|default(null) }}"
+    server_hostname: "{{ server_url | default(omit) }}"
+    rhsm_baseurl: "{{ base_url | default(omit) }}"
     auto_attach: true
     force_register: yes
     org_id: "{{ rhsm_org_id|default(null) }}"
