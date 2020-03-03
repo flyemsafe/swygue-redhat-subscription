@@ -1,5 +1,7 @@
 - name: check if katello-ca-consumer is installed
   command: rpm -qa katello-ca-consumer*
+  args:
+    warn: false
   register: katello_ca_pkg
   tags:
     - register

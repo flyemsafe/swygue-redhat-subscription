@@ -52,3 +52,9 @@ rhsm_identity_force: false
 
 # List of repos to disable
 repos_to_disable: ''
+
+# the server to subscription-manager register
+rhsm_server_url: "{{ rhsm_hostname }}/rhsm"
+
+# the base url for yum repos
+rhsm_base_url: "https://{{ rhsm_hostname }}"

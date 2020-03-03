@@ -16,8 +16,8 @@
 
 - name: declar rhsm server_url and rhsm base_url
   set_fact:
-    server_url: "{{ rhsm_hostname }}/rhsm"
-    base_url: "https://{{ rhsm_hostname }}"
+    server_url: "{{ rhsm_server_url }}"
+    base_url: "{{ rhsm_base_url }}"
   when: rhsm_is_satellite
 
 - name: install the katello consumer rpm
