@@ -80,10 +80,6 @@
           (rhsm_fix_registration == true))
   tags: [register,consumer_ca]
 
-- debug:
-    msg: "Register with actkey {{ rhsm_activationkey }}? {{ use_activation_key}} or system ident {{ use_system_identity }}"
-- meta: end_play
-
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
   #when: system_registered == true
