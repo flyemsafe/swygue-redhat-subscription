@@ -12,9 +12,9 @@
 - name: include check_katello_ca.yml
   include_tasks: check_katello_ca.yml
   tags: [register, katello_ca]
-  when: rhsm_is_satellite
+  #when: rhsm_is_satellite
 
-- name: declar rhsm server_url and rhsm base_url
+- name: declare rhsm server_url and rhsm base_url
   set_fact:
     server_url: "{{ rhsm_server_url }}"
     base_url: "{{ rhsm_base_url }}"

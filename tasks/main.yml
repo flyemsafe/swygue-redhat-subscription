@@ -1,9 +1,15 @@
 ---
 # tasks file for swygue-redhat-subscription
+
 - name: ensure subscription-manager is installed
-  package:
-    name: subscription-manager
-    state: present
+  block:
+    - command: yum list installed subscription-manager
+      args:
+        warn: no
+      changed_when: False
+  rescue:
+    - debug:
+        msg: 'Cannot continue because subscription-manager was not found on the system.'
   tags: [always]
 
 - name: check if system is already registered

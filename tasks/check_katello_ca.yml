@@ -28,7 +28,7 @@
   yum:
     name: katello-ca-consumer*
     state: absent
-  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1)
+  when: (katello_ca_installed and katello_ca_consumer_cn.rc == 1) or (not rhsm_is_satellite|bool and katello_ca_installed)
   tags:
     - register
     - katello_ca
