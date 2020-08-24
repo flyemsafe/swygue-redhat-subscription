@@ -1,15 +1,10 @@
 ---
-#- name: disable os default repos when registered to RHSM
-#  shell: "dnf config-manager --set-disabled {{ item }}"
-#  with_items: "{{ rhsm_repos_to_disable }}"
-#  ignore_errors: yes
-#  when: rhsm_repos_to_disable is defined and rhsm_repos_to_disable != ''
 
 - name: refresh subscriptions
   shell: subscription-manager refresh
   register: rhsm_refresh
   changed_when: False
-  
+
 - name: create empty list to store enable repo ids
   set_fact:
     enabled_repo_ids: []
@@ -27,19 +22,11 @@
 
 - name: create list of enabled repos that should not be enabled
   set_fact:
-    rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else false }}"
-
-- debug:
-    msg: "Repos to Enable {{ rhsm_repos }}"
+    rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else '' }}"
 
 - name: create list of repos that should be enabled
   set_fact:
-    repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if (enabled_repo_ids) else false }}"
-
-- name: these repos will be disabled
-  debug:
-    var: rhsm_repos_to_disable
-  when: rhsm_repos_to_disable|length > 0
+    repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if enabled_repo_ids != '' else '' }}"
 
 - name: disable repos
   redhat_repositories:
@@ -49,11 +36,6 @@
   with_items: "{{ rhsm_repos_to_disable }}"
   when: rhsm_repos_to_disable|length > 0
 
-- name: these repos will be enabled
-  debug:
-    var: repos_to_enable
-  when: repos_to_enable|length > 0
-
 - name: include pools.yml
   include_tasks: pools.yml
   tags: 
@@ -61,6 +43,12 @@
     - katello_ca
   when: ((rhsm_pool_ids is defined and rhsm_pool_ids != '') or (pools is defined and pools != '') and
           (repos_to_enable|length > 0))
+
+- name: these repos will be enabled
+  debug:
+   msg: "{{ item }}"
+  when: repos_to_enable|length > 0
+  with_items: "{{ repos_to_enable }}"
 
 - name: Enable repositories
   redhat_repositories:
