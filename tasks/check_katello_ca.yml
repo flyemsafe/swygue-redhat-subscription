@@ -7,7 +7,7 @@
     - register
     - katello_ca
 
-- name: declare fact system_registered true if status is registered
+- name: declare the fact katello_ca_installed
   set_fact:
     katello_ca_installed: "{{ true if  katello_ca_pkg.stdout != '' else false }}"
   tags:

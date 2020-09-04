@@ -2,40 +2,29 @@
 # tasks file for swygue-redhat-subscription
 
 - name: ensure subscription-manager is installed
+  tags: [always, checks]
   block:
-    - command: yum list installed subscription-manager
+    - name: check if subscription-manager is installed
+      command: yum list installed subscription-manager
       args:
         warn: no
       changed_when: False
   rescue:
-    - debug:
+    - name: report when subscription-manager isn't stalled
+      debug:
         msg: 'Cannot continue because subscription-manager was not found on the system.'
-  tags: [always]
 
-- name: check if system is already registered
+- name: check if system is registered
   command: subscription-manager refresh
   register: is_system_registered
   failed_when: False
   changed_when: False
-  tags: [always]
-
-- name: check system registration status
-  shell: >
-      subscription-manager status | awk '/Overall Status:/ {print $3}'
-  failed_when: False
-  changed_when: False
-  register: system_rhsm_status
-  tags: [always]
+  tags: [always, checks]
 
 - name: declare fact system_registered true if status is registered
   set_fact:
     system_registered: "{{ true if is_system_registered.rc==0 else false }}"
     system_registered_msg: "{{ 'registered' if is_system_registered.rc==0 else 'not registered' }}"
-  tags: [always]
-
-- name: report system registration status
-  debug:
-    msg: "The system is {{ system_registered_msg }}."
   tags: [always]
 
 - name: declare fact remove_system_registration if rhsm_unregister is set
@@ -52,6 +41,19 @@
   set_fact:
     use_activation_key: "{{ false if rhsm_activationkey == '' else true }}"
   tags: [register]
+
+- name: check system registration status
+  shell: >
+      subscription-manager status | awk '/Overall Status:/ {print $3}'
+  failed_when: False
+  changed_when: False
+  register: system_rhsm_status
+  tags: [always]
+
+- name: report system registration status
+  debug:
+    msg: "The system is {{ system_registered_msg }}."
+  tags: [always]
 
 - name: check system if system is in the right ORG
   include_tasks: check_org.yml
@@ -79,6 +81,15 @@
           ( rhsm_fix_registration|bool ))
   tags: [unregister]
 
+- name: show registration method
+  debug:
+    msg:
+      - "use_activation_key = {{ use_activation_key }}"
+      - "use_system_identity = {{ use_system_identity }}"
+      - "system_registered = {{ system_registered }}"
+  tags: [register,consumer_ca]
+
+
 - name: REGISTER|register system to RHSM or Satellite
   include_tasks: register.yml
   when: ( (system_registered != true) and
@@ -88,7 +99,6 @@
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml
-  #when: system_registered == true
   when: (system_registered|bool and not remove_system_registration|bool)
          or (rhsm_fix_registration|bool)
   tags: [register,repos]

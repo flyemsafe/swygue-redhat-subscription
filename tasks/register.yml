@@ -2,6 +2,10 @@
 # TODO: Add task to update the ORG a update belong to before registering
 #       Assuming host already exists.
 
+- name: include check_katello_ca.yml
+  include_tasks: check_katello_ca.yml
+  tags: [register, katello_ca]
+
 - name: clean out existing subscription certificate
   shell: subscription-manager clean
   register: rhsm_clean
@@ -9,22 +13,19 @@
   ignore_errors: yes
   tags: [register]
 
-- name: include check_katello_ca.yml
-  include_tasks: check_katello_ca.yml
-  tags: [register, katello_ca]
-  #when: rhsm_is_satellite
-
 - name: declare rhsm server_url and rhsm base_url
   set_fact:
     server_url: "{{ rhsm_server_url }}"
     base_url: "{{ rhsm_base_url }}"
-  when: rhsm_is_satellite
+  when: rhsm_is_satellite|bool
+  tags: [register]
 
 - name: install the katello consumer rpm
   package:
     name: "http://{{ rhsm_hostname }}/pub/{{ rhsm_katello_ca_consumer_rpm }}"
     state: present
-  when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite
+  when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite|bool
+  tags: [register]
 
 - name: Register {{ inventory_hostname }} to RHSM using activation key
   redhat_subscription:
@@ -35,8 +36,8 @@
     org_id: "{{ rhsm_org_id }}"
     force_register: yes
   register: is_registered_actkey
-  when: use_activation_key and not use_system_identity
-  #failed_when: "'The system has been registered with ID' not in is_registered_actkey.stdout"
+  when: use_activation_key|bool and not use_system_identity|bool
+  tags: [register]
 
 # This has not been tested againist Satellite
 - name: Register {{ inventory_hostname }} system using rhsm_identity
@@ -48,8 +49,9 @@
     org_id: "{{ rhsm_org_id }}"
     use_system_identity: "{{ rhsm_identity }}"
   register: is_registered_use_system_identity
-  when: use_system_identity and not use_activation_key
+  when: use_system_identity|bool and not use_activation_key|bool
   failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
+  tags: [register]
 
 - name: Register {{ inventory_hostname }} system using rhsm_user and rhsm_password
   redhat_subscription:
@@ -62,13 +64,15 @@
     force_register: yes
     org_id: "{{ rhsm_org_id|default(null) }}"
   register: is_registered_rhsm_user
-  when: not use_system_identity and not use_activation_key
+  when: not use_system_identity|bool and not use_activation_key|bool
+  tags: [register]
 
 - name: refresh subscriptions
   shell: subscription-manager refresh
   register: rhsm_refresh
   changed_when: False
   when: is_registered_rhsm_user.changed
+  tags: [register]
 
 - name: REPOS| enable system repositories
   include_tasks: repos.yml

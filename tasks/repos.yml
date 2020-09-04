@@ -1,32 +1,31 @@
 ---
-
-- name: refresh subscriptions
-  shell: subscription-manager refresh
-  register: rhsm_refresh
-  changed_when: False
-
 - name: create empty list to store enable repo ids
   set_fact:
     enabled_repo_ids: []
+  tags: [repos,register]
 
 - name: save enabled redhat repositories
   redhat_repositories:
     list: enabled
   register: enabled_repositories
+  tags: [repos,register]
 
 - name: save the repo ids for the enaled repositories
   set_fact:
     enabled_repo_ids: "{{ enabled_repo_ids }} + [ '{{ item.value.id }}' ]"
   with_dict: "{{ enabled_repositories.redhat_repositories }}"
   no_log: True
+  tags: [repos,register]
 
 - name: create list of enabled repos that should not be enabled
   set_fact:
     rhsm_repos_to_disable: "{{ (enabled_repo_ids | difference(rhsm_repos)) if (enabled_repo_ids is defined and enabled_repo_ids != '') else '' }}"
+  tags: [repos,register]
 
 - name: create list of repos that should be enabled
   set_fact:
     repos_to_enable: "{{ (rhsm_repos | difference(enabled_repo_ids)) if enabled_repo_ids != '' else '' }}"
+  tags: [repos,register]
 
 - name: disable repos
   redhat_repositories:
@@ -35,6 +34,7 @@
     mode: incremental
   with_items: "{{ rhsm_repos_to_disable }}"
   when: rhsm_repos_to_disable|length > 0
+  tags: [repos,register]
 
 - name: include pools.yml
   include_tasks: pools.yml
@@ -49,6 +49,7 @@
    msg: "{{ item }}"
   when: repos_to_enable|length > 0
   with_items: "{{ repos_to_enable }}"
+  tags: [repos,register]
 
 - name: Enable repositories
   redhat_repositories:
@@ -58,7 +59,8 @@
   with_items: "{{ repos_to_enable }}"
   when: repos_to_enable|length > 0
   ignore_errors: yes
-
+  tags: [repos,register]
+  
 - name: install satellite client tools
   include_tasks: smart_mgt_tools.yml
   tags: [repos,register,katello_ca]
