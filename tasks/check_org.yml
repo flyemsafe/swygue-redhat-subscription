@@ -1,5 +1,5 @@
 - name: return the ORG the system is registered to
-  shell: subscription-manager identity| awk -F':' '/org ID/ {print $2}'|tr -d " \t\n\r"
+  shell: subscription-manager identity| awk -F':' '/org ID/ {print $2}'|sed -e 's/^[ \t]*//'
   register: rhsm_org_id_check
   changed_when: False
   ignore_errors: yes
@@ -8,10 +8,6 @@
   set_fact:
     org_id: "{{ true if rhsm_org_id|string == rhsm_org_id_check.stdout|string else false }}"
     org_msg: "{{ 'in the right ORG' if rhsm_org_id|string == rhsm_org_id_check.stdout|string else 'system is not in the right org' }}"
-
-- name: report the org the system is in
-  debug:
-    msg: "The {{ inventory_hostname }} is {{ org_msg }} with ORG ID {{ rhsm_org_id }}."
 
 - name: check if system is registered to the correct RHSM host
   command: grep -xq 'hostname = {{ rhsm_hostname }}' /etc/rhsm/rhsm.conf
@@ -24,4 +20,9 @@
   set_fact:
     reregister_system: true
     register_system_msg:
-  when: (org_id == false) or (rhsm_hostname_check.rc == 0)
+  when: (org_id == false) or (rhsm_hostname_check.rc != 0)
+
+- name: setting rhsm_fix_registration to true because the current ORG Id {{ org_msg }} does not match the requested {{ rhsm_org_id }}
+  set_fact:
+    fix_registration: true
+  when: org_id == false or rhsm_hostname_check.rc != 0 

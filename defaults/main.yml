@@ -45,6 +45,7 @@ rhsm_insights_client_pkgs:
 
 # force system re-registration
 rhsm_fix_registration: false
+fix_registration: false
 
 # Set this to true if the system is already registered
 rhsm_identity_force: false
@@ -58,3 +59,8 @@ rhsm_server_url: "{{ rhsm_hostname }}/rhsm"
 
 # the base url for yum repos
 rhsm_base_url: "https://{{ rhsm_hostname }}"
+
+# Declared variables for setfacts
+org_id_is_correct: ""
+contentview_is_correct: ""
+rhsm_host_is_correct: ""

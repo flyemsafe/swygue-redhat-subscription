@@ -7,10 +7,11 @@
   debug:
     msg: "The {{ inventory_hostname }} is registered to {{ rhsm_hostname_check.stdout }}."
 
-- name: set fact rhsm_host_match to true if it matches the system current RHSM HOST otherwise false
+- name: set fact rhsm_host_is_correct to true if it matches the system current RHSM HOST otherwise false
   set_fact:
-    rhsm_host_match: "{{ true if rhsm_hostname|string == rhsm_hostname_check.stdout|string else false }}"
+    rhsm_host_is_correct: "{{ true if rhsm_hostname|string == rhsm_hostname_check.stdout|string else false }}"
 
 - name: setting rhsm_fix_registration status
   set_fact:
-    rhsm_fix_registration: "{{ true if rhsm_host_match == false else false }}"
+    fix_registration: true
+  when: rhsm_host_is_correct == false

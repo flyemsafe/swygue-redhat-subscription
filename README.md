@@ -16,7 +16,22 @@ This role will accomplish the following base on the variables pass:
 Requirements
 ------------
 
-This role depends on [jfenal/ansible-modules-jfenal redhat_repositories.py](https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py) which is included.
+This role depends on [jfenal/ansible-modules-jfenal redhat_repositories.py](https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py). This needs to be placed in your ansible.cfg library path or create a library folder local to the role and drop this module their..
+
+**Example: ansible.cfg path**
+```
+grep library ~/.ansible.cfg
+library        = /home/me/.ansible/modules/
+cd /home/me/.ansible/modules/
+wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
+```
+**Example: local to the role**
+```
+git clone git@github.com:flyemsafe/swygue-redhat-subscription.git
+mkdir swygue-redhat-subscription/library
+cd swygue-redhat-subscription/library
+wget https://raw.githubusercontent.com/jfenal/ansible-modules-jfenal/master/packaging/os/redhat_repositories.py
+```
 
 
 Role Variables

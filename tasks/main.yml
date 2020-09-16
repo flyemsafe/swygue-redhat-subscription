@@ -42,19 +42,6 @@
     use_activation_key: "{{ false if rhsm_activationkey == '' else true }}"
   tags: [register]
 
-- name: check system registration status
-  shell: >
-      subscription-manager status | awk '/Overall Status:/ {print $3}'
-  failed_when: False
-  changed_when: False
-  register: system_rhsm_status
-  tags: [always]
-
-- name: report system registration status
-  debug:
-    msg: "The system is {{ system_registered_msg }}."
-  tags: [always]
-
 - name: check system if system is in the right ORG
   include_tasks: check_org.yml
   when: (system_registered == true and rhsm_org_id is defined) and (rhsm_org_id != "")
@@ -70,9 +57,39 @@
   when: system_registered == true and rhsm_hostname != ""
   tags: [register]
 
-- name: set system_registered to false if subscription-manager status is not current
+- name: check system registration status
+  shell: >
+      subscription-manager status | awk '/Overall Status:/ {print $3}'
+  failed_when: False
+  changed_when: False
+  register: system_rhsm_status
+  tags: [always]
+
+## need to find a better way to fix registration when status is not Current
+#- name: set fix_registration to true if subscription-manager status is not current
+#  set_fact:
+#    fix_registration: true
+#  when: system_rhsm_status.stdout != 'Current'
+
+- name: set rhsm_fix_registration to true if fix_registration is defined
   set_fact:
-    rhsm_fix_registration: "{{ true if system_rhsm_status.stdout != 'Current' else false }}"
+    rhsm_fix_registration: "{{ true if fix_registration == true else false }}"
+  tags: [always]
+
+- name: display some keys facts about system registration
+  debug:
+    msg:
+      - "use_activation_key = {{ use_activation_key }}"
+      - "use_system_identity = {{ use_system_identity }}"
+      - "system_registered = {{ system_registered }}"
+      - "rhsm_fix_registration = {{ rhsm_fix_registration }}"
+      - "org_id_is_correct = {{ org_id_is_correct }}"
+      - "contentview_is_correct = {{ contentview_is_correct }}"
+      - "rhsm_host_is_correct = {{ rhsm_host_is_correct }}"
+      - "fix_registration = {{ fix_registration }}"
+      - "The system is {{ system_registered_msg }}."
+  tags: [register,consumer_ca]
+
 
 - name: UNREGISTER|remove system rhsm registration if subscription is not current or rhsm ORG id does not match the systems current registered ORG id
   include_tasks: unregister.yml
@@ -80,15 +97,6 @@
           (system_registered|bool ) or
           ( rhsm_fix_registration|bool ))
   tags: [unregister]
-
-- name: show registration method
-  debug:
-    msg:
-      - "use_activation_key = {{ use_activation_key }}"
-      - "use_system_identity = {{ use_system_identity }}"
-      - "system_registered = {{ system_registered }}"
-  tags: [register,consumer_ca]
-
 
 - name: REGISTER|register system to RHSM or Satellite
   include_tasks: register.yml

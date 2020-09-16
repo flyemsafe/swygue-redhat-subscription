@@ -1,4 +1,8 @@
 ---
+- name: remove system from insights
+  command: insights-client --unregister
+  changed_when: false
+  
 - name: removing system rhsm registration
   redhat_subscription:
     state: absent
@@ -12,4 +16,3 @@
 - name: show unregister_status details for {{ inventory_hostname }}
   debug:
     var: unregister_status
-

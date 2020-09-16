@@ -12,8 +12,7 @@
     reregister_system: true
   when: cv_status == false
 
-- name: show rhsm_content_view_check.stdout
-  debug: msg="{{ rhsm_content_view_check.stdout }}"
-
-- name: show reregister_system
-  debug: msg="{{ reregister_system }}"
+- name: setting rhsm_fix_registration to true because the current content view {{ rhsm_content_view_check.stdout }} does not match the requested {{ rhsm_content_view }}
+  set_fact:
+    fix_registration: true
+  when: contentview_is_correct == false

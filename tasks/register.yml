@@ -35,6 +35,7 @@
     rhsm_baseurl: "{{ base_url | default(omit) }}"
     org_id: "{{ rhsm_org_id }}"
     force_register: yes
+    syspurpose: "{{ system_purpose | default(omit) }}"
   register: is_registered_actkey
   when: use_activation_key|bool and not use_system_identity|bool
   tags: [register]
@@ -48,6 +49,7 @@
     rhsm_baseurl: "{{ base_url | default(omit) }}"
     org_id: "{{ rhsm_org_id }}"
     use_system_identity: "{{ rhsm_identity }}"
+    syspurpose: "{{ system_purpose | default(omit) }}"
   register: is_registered_use_system_identity
   when: use_system_identity|bool and not use_activation_key|bool
   failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
@@ -63,6 +65,7 @@
     auto_attach: true
     force_register: yes
     org_id: "{{ rhsm_org_id|default(null) }}"
+    syspurpose: "{{ system_purpose | default(omit) }}"
   register: is_registered_rhsm_user
   when: not use_system_identity|bool and not use_activation_key|bool
   tags: [register]
