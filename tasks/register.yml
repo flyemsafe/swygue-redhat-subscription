@@ -27,6 +27,27 @@
   when: katello_ca_installed|default(false)|bool == false and rhsm_is_satellite|bool
   tags: [register]
 
+# This has not been tested againist Satellite
+# Attempt to register system using an existing identity if defined
+# undefine use_system_identity if registration fails
+- name: Register {{ inventory_hostname }} system using rhsm_identity
+  when: use_system_identity|bool and not use_activation_key|bool
+  tags: [register]
+  block:
+      redhat_subscription:
+        state: present
+        activationkey: "{{ rhsm_activationkey }}"
+        server_hostname: "{{ server_url | default(omit) }}"
+        rhsm_baseurl: "{{ base_url | default(omit) }}"
+        org_id: "{{ rhsm_org_id }}"
+        use_system_identity: "{{ rhsm_identity }}"
+        syspurpose: "{{ system_purpose | default(omit) }}"
+      register: is_registered_use_system_identity
+  rescue:
+      - name: set fact use_system_identity when rhsm_identity is defined
+        set_fact:
+          use_system_identity: false
+
 - name: Register {{ inventory_hostname }} to RHSM using activation key
   redhat_subscription:
     state: present
@@ -39,22 +60,7 @@
   register: is_registered_actkey
   when: use_activation_key|bool and not use_system_identity|bool
   tags: [register]
-
-# This has not been tested againist Satellite
-- name: Register {{ inventory_hostname }} system using rhsm_identity
-  redhat_subscription:
-    state: present
-    activationkey: "{{ rhsm_activationkey }}"
-    server_hostname: "{{ server_url | default(omit) }}"
-    rhsm_baseurl: "{{ base_url | default(omit) }}"
-    org_id: "{{ rhsm_org_id }}"
-    use_system_identity: "{{ rhsm_identity }}"
-    syspurpose: "{{ system_purpose | default(omit) }}"
-  register: is_registered_use_system_identity
-  when: use_system_identity|bool and not use_activation_key|bool
-  failed_when: "'The system has been registered with ID' not in is_registered_use_system_identity.stdout"
-  tags: [register]
-
+        
 - name: Register {{ inventory_hostname }} system using rhsm_user and rhsm_password
   redhat_subscription:
     state: present
