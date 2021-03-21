@@ -30,10 +30,11 @@
 # This has not been tested againist Satellite
 # Attempt to register system using an existing identity if defined
 # undefine use_system_identity if registration fails
-- name: Register {{ inventory_hostname }} system using rhsm_identity
+- name: Register system using rhsm_identity
   when: use_system_identity|bool and not use_activation_key|bool
   tags: [register]
   block:
+    - name: Registering system {{ inventory_hostname }} with rhsm_identity
       redhat_subscription:
         state: present
         activationkey: "{{ rhsm_activationkey }}"
