@@ -55,6 +55,8 @@ Role Variables
 |rhsm_setup_insights_client|:heavy_check_mark: |```true```|Installs and setup the insights client. You should be using the offcial [role](https://github.com/RedHatInsights/insights-client-role) for more configuration options.|
 |rhsm_insights_client_pkgs|:x:|```see defaults/main.yml```|Required when setting insights|
 |rhsm_fix_registration|:x:|:heavy_check_mark:|Set this to force a re-registration of the system|
+|system_purpose|:x:|null|Sets the system purpose|
+
 
 
 Dependencies

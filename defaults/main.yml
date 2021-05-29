@@ -64,3 +64,11 @@ rhsm_base_url: "https://{{ rhsm_hostname }}"
 org_id_is_correct: ""
 contentview_is_correct: ""
 rhsm_host_is_correct: ""
+
+# enable to set system purpose
+#system_purpose:
+#  usage: ""
+#  role: ""
+#  service_level_agreement: "Self-Support"
+#  sync: true
+#  addons: []
